@@ -1,14 +1,16 @@
 // @login & register
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcrypt');
+const bcryptjs = require('bcryptjs');
 const gravatar = require('gravatar');
 
+// 用户数据模型
 const User = require('../../modules/User');
 
 /**
- * $route   GET  api/users/test
- * @desc    返回的请求的json数据
+ * $route   api/users/test
+ * @method  GET
+ * @desc    测试接口
  * @access  public
  */
 router.get('/test', (req, res) => {
@@ -16,8 +18,9 @@ router.get('/test', (req, res) => {
 });
 
 /**
- * $route   POST  api/users/register
- * @desc    返回的请求的json数据
+ * $route   api/users/register
+ * @method  POST
+ * @desc    注册用户
  * @access  public
  */
 router.post('/register', (req, res) => {
@@ -31,6 +34,7 @@ router.post('/register', (req, res) => {
       } else {
         let avatar = gravatar.url(req.body.email, {s: '200', r: 'pg', d: 'mm'});
 
+        // 创建用户
         const newUser = new User({
           name: req.body.name,
           email: req.body.email,
@@ -38,12 +42,12 @@ router.post('/register', (req, res) => {
           avatar
         });
 
-        bcrypt.genSalt(10, (err, salt) => {
-          bcrypt.hash(newUser.password, salt, (err, hash) => {
+        // 加密密码
+        bcryptjs.genSalt(10, (err, salt) => {
+          bcryptjs.hash(newUser.password, salt, (err, hash) => {
             if (err) throw err;
 
             newUser.password = hash;
-
             newUser.save()
               .then(user => res.json(user))
               .catch(err => console.log(err));
