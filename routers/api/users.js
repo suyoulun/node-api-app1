@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const gravatar = require('gravatar');
+const jwt = require('jsonwebtoken');
 
 // 用户数据模型
 const User = require('../../modules/User');
@@ -77,7 +78,16 @@ router.post('/login', (req, res) => {
       // 密码匹配
       bcrypt.compare(password, user.password).then((isMatch) => {
         if (isMatch) {
-          res.json({msg: '登录成功'})
+          // jwt.sign('规则', '加密名字', '过期时间', '箭头函数');
+          const rule = {id: user.id, name: user.name};
+          jwt.sign(rule, 'secret', {expiresIn: 1800}, (err, token) => {
+            if (err) throw err;
+            res.json({
+              success: true,
+              token
+            })
+          });
+          // res.json({msg: '登录成功'})
         } else {
           res.status(400).json({msg: '密码错误'})
         }
