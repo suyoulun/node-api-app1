@@ -1,7 +1,7 @@
 // @login & register
 const express = require('express');
 const router = express.Router();
-const bcryptjs = require('bcryptjs');
+const bcrypt = require('bcryptjs');
 const gravatar = require('gravatar');
 
 // 用户数据模型
@@ -43,8 +43,8 @@ router.post('/register', (req, res) => {
         });
 
         // 加密密码
-        bcryptjs.genSalt(10, (err, salt) => {
-          bcryptjs.hash(newUser.password, salt, (err, hash) => {
+        bcrypt.genSalt(10, (err, salt) => {
+          bcrypt.hash(newUser.password, salt, (err, hash) => {
             if (err) throw err;
 
             newUser.password = hash;
@@ -55,6 +55,34 @@ router.post('/register', (req, res) => {
         });
       }
     });
+});
+
+/**
+ * $route  /api/users/login
+ * @method  POST
+ * @desc    用户登录
+ * @return  token jwt passport
+ * @access  public
+ */
+router.post('/login', (req, res) => {
+  const {email, password} = req.body;
+
+  // 查询数据库
+  User.findOne({email})
+    .then(user => {
+      if (!user) {
+        return res.status(400).json({msg: '用户不存在'})
+      }
+
+      // 密码匹配
+      bcrypt.compare(password, user.password).then((isMatch) => {
+        if (isMatch) {
+          res.json({msg: '登录成功'})
+        } else {
+          res.status(400).json({msg: '密码错误'})
+        }
+      });
+    })
 });
 
 module.exports = router;
