@@ -1,7 +1,11 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const passport = require('passport');
 const app = express();
+const port = process.env.PORT || 5000;
+
+
 
 
 // 使用body-parser中间件
@@ -16,18 +20,19 @@ mongoose.connect(db, { useNewUrlParser: true })
   .then(() => console.log(db + '  数据库连接成功  MongoDB Connected......'))
   .catch(err => console.log(db + '  数据库连接失败', err));
 
-const port = process.env.PORT || 5000;
 
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-});
-
-// 引入 users.js
+// 引入路由模块 users.js
 const users = require('./routers/api/users');
 // 使用routers
 app.use('/api/users', users);
 
 
+// 初始化 passport
+app.use(passport.initialize());
+require('./config/passport.js')(passport);
+
+
+// 开启服务
 app.listen(port, () => {
   console.log(`Server runing on port         http://localhost:${port}`);
 });

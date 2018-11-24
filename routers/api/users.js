@@ -4,6 +4,8 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const gravatar = require('gravatar');
 const jwt = require('jsonwebtoken');
+const passport = require('passport');
+const keys = require('../../config/keys.js');
 
 // 用户数据模型
 const User = require('../../modules/User');
@@ -21,6 +23,9 @@ router.get('/test', (req, res) => {
 /**
  * $route   api/users/register
  * @method  POST
+ * @param   email     邮箱
+ * @param   name      用户名
+ * @param   password   密码
  * @desc    注册用户
  * @access  public
  */
@@ -61,6 +66,8 @@ router.post('/register', (req, res) => {
 /**
  * $route  /api/users/login
  * @method  POST
+ * @param   email     邮箱
+ * @param   password  密码
  * @desc    用户登录
  * @return  token jwt passport
  * @access  public
@@ -80,11 +87,11 @@ router.post('/login', (req, res) => {
         if (isMatch) {
           // jwt.sign('规则', '加密名字', '过期时间', '箭头函数');
           const rule = {id: user.id, name: user.name};
-          jwt.sign(rule, 'secret', {expiresIn: 1800}, (err, token) => {
+          jwt.sign(rule, keys.secretOrKey, {expiresIn: 1800}, (err, token) => {
             if (err) throw err;
             res.json({
               success: true,
-              token
+              token: 'Bearer ' + token // 固定名称
             })
           });
           // res.json({msg: '登录成功'})
@@ -93,6 +100,22 @@ router.post('/login', (req, res) => {
         }
       });
     })
+});
+
+/**
+ * $route  /api/users/current
+ * @method  GET
+ * @header  Token
+ * @desc    获取用户信息
+ * @return  用户信息
+ * @access  private
+ */
+router.get('/current', passport.authenticate('jwt', {session:false}), (req, res) => {
+  res.json({
+    id: req.user.id,
+    name: req.user.name,
+    email: req.user.email
+  })
 });
 
 module.exports = router;
