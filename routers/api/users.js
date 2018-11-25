@@ -10,6 +10,11 @@ const keys = require('../../config/keys.js');
 // 用户数据模型
 const User = require('../../modules/User');
 
+
+// 引入验证方法
+const validateRegisterInput = require('../../validation/register');
+const validateLoginInput = require('../../validation/login');
+
 /**
  * $route   api/users/test
  * @method  GET
@@ -31,6 +36,12 @@ router.get('/test', (req, res) => {
  */
 router.post('/register', (req, res) => {
   // console.log(req.body);
+
+  // 验证请求参数
+  const {errors, isValid} = validateRegisterInput(req.body);
+  if (!isValid) {
+    return res.status(400).json(errors)
+  }
 
   // 查询数据库中是否拥有该邮箱
   User.findOne({email: req.body.email})
@@ -74,6 +85,12 @@ router.post('/register', (req, res) => {
  */
 router.post('/login', (req, res) => {
   const {email, password} = req.body;
+
+  // 验证请求参数
+  const {errors, isValid} = validateLoginInput(req.body);
+  if (!isValid) {
+    return res.status(400).json(errors)
+  }
 
   // 查询数据库
   User.findOne({email})
