@@ -28,10 +28,12 @@ app.use((request, response, next) => {
 });
 
 
-// 引入路由模块 users.js
+// 引入路由模块
 const users = require('./routers/api/users');
+const profile = require('./routers/api/profile');
 // 使用routers
 app.use('/api/users', users);
+app.use('/api/profile', profile);
 
 
 // 初始化 passport
