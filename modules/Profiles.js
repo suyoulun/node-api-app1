@@ -94,7 +94,7 @@ const ProfileSchema = new Schema({
       }
     }
   ],
-  social: {
+  social: { // 社交
     wechat: { // 微信
       type: String
     },
