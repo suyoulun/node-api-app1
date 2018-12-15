@@ -6,6 +6,9 @@ const passport = require('passport');
 const Profile = require('../../modules/Profiles');
 const User = require('../../modules/User');
 
+// 引入验证方法
+const validateProfileInput = require('../../validation/profile');
+
 /**
  * $route   api/users/test
  * @method  GET
@@ -42,7 +45,12 @@ router.get('/', passport.authenticate('jwt', {session:false}), (req, res) => {
  * @access  private
  */
 router.post('/', passport.authenticate('jwt', {session:false}), (req, res) => {
-  const errors = {};
+  // 验证请求参数
+  const {errors, isValid} = validateProfileInput(req.body);
+  if (!isValid) {
+    return res.status(400).json(errors)
+  }
+
   const profileFields = {};
   profileFields.user = req.user.id;
   if (req.body.handle) profileFields.handle = req.body.handle;
