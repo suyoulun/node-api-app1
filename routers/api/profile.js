@@ -28,6 +28,7 @@ router.get('/test', (req, res) => {
 router.get('/', passport.authenticate('jwt', {session:false}), (req, res) => {
   const errors = {};
   Profile.findOne({user: req.user.id})
+    .populate('user', ['name', 'avatar']) // 显示user表里的数据
     .then(profile => {
       if (!profile) {
         errors.noprofile = '该用户的信息不存在'
@@ -35,7 +36,7 @@ router.get('/', passport.authenticate('jwt', {session:false}), (req, res) => {
       }
       res.json(profile)
     })
-    .catch(err => res.status(404).json(errors));
+    .catch(err => res.status(404).json(err));
 });
 
 /**
@@ -90,6 +91,67 @@ router.post('/', passport.authenticate('jwt', {session:false}), (req, res) => {
       })
     }
   })
+});
+
+/**
+ * $route   api/profile/handle/:handle
+ * @method  GET
+ * @desc    通过 handle 获取用户个人档案
+ * @access  public
+ */
+router.get('/handle/:handle', (req, res) => {
+  const errors = {};
+  Profile.findOne({handle: req.params.handle})
+    .populate('user', ['name', 'avatar']) // 显示user表里的数据
+    .then(profile => {
+      if (!profile) {
+        errors.noprofile = '未找到该用户的信息'
+        return res.status(404).json(errors)
+      }
+      res.json(profile)
+    })
+    .catch(err => res.status(404).json(err));
+});
+
+/**
+ * $route   api/profile/user/:user_id
+ * @method  GET
+ * @desc    通过 user_id 获取用户个人档案
+ * @access  public
+ */
+router.get('/user/:user_id', (req, res) => {
+  const errors = {};
+  Profile.findOne({user: req.params.user_id})
+    .populate('user', ['name', 'avatar']) // 显示user表里的数据
+    .then(profile => {
+      if (!profile) {
+        errors.noprofile = '未找到该用户的信息'
+        return res.status(404).json(errors)
+      }
+      res.json(profile)
+    })
+    .catch(err => res.status(404).json(err));
+});
+
+
+/**
+ * $route   api/profile/all
+ * @method  GET
+ * @desc    获取所有用户个人档案
+ * @access  public
+ */
+router.get('/all', (req, res) => {
+  const errors = {};
+  Profile.find()
+    .populate('user', ['name', 'avatar']) // 显示user表里的数据
+    .then(profile => {
+      if (!profile) {
+        errors.noprofile = '没有任何用户信息'
+        return res.status(404).json(errors)
+      }
+      res.json(profile)
+    })
+    .catch(err => res.status(404).json(err));
 });
 
 
