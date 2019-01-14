@@ -43,5 +43,5 @@ require('./config/passport.js')(passport);
 
 // 开启服务
 app.listen(port, () => {
-  console.log(`Server runing on port         http://localhost:${port}`);
+  console.log(`【${new Date().toLocaleString()}】Server runing on port    http://localhost:${port}`);
 });

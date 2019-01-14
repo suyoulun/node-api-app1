@@ -8,6 +8,8 @@ const User = require('../../modules/User');
 
 // 引入验证方法
 const validateProfileInput = require('../../validation/profile');
+const validateExperienceInput = require('../../validation/experience');
+const validateEducationInput = require('../../validation/education');
 
 /**
  * $route   api/users/test
@@ -152,6 +154,74 @@ router.get('/all', (req, res) => {
       res.json(profile)
     })
     .catch(err => res.status(404).json(err));
+});
+
+
+/**
+ * $route   api/profile/experience
+ * @method  POST
+ * @desc    添加个人工作经历
+ * @access  private
+ */
+router.post('/experience', passport.authenticate('jwt', {session:false}), (req, res) => {
+  // 验证请求参数
+  const {errors, isValid} = validateExperienceInput(req.body);
+  if (!isValid) {
+    return res.status(400).json(errors)
+  }
+
+  Profile.findOne({user: req.user.id})
+    .then(profile => {
+      const newExp = {
+        current: req.body.current,
+        title: req.body.title,
+        company: req.body.company,
+        location: req.body.location,
+        from: req.body.from,
+        to: req.body.to,
+        description: req.body.description
+      };
+
+      profile.experience.unshift(newExp);
+
+      profile.save()
+        .then(profile => res.json(profile))
+        .catch(err => res.status(400).json(err))
+    })
+});
+
+
+/**
+ * $route   api/profile/education
+ * @method  POST
+ * @desc    添加个人教育经历
+ * @access  private
+ */
+router.post('/education', passport.authenticate('jwt', {session:false}), (req, res) => {
+  // 验证请求参数
+  const {errors, isValid} = validateEducationInput(req.body);
+  if (!isValid) {
+    return res.status(400).json(errors)
+  }
+
+  Profile.findOne({user: req.user.id})
+    .then(profile => {
+      const newEdu = {
+        current: req.body.current,
+        school: req.body.school,
+        degree: req.body.degree,
+        fieldofstudy: req.body.fieldofstudy,
+        from: req.body.from,
+        to: req.body.to,
+        description: req.body.description
+      };
+
+      profile.education.unshift(newEdu);
+
+      profile.save()
+        .then(profile => res.json(profile))
+        .catch(err => res.status(400).json(err))
+    })
 });
 
 

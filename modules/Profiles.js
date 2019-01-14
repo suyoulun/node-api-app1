@@ -37,7 +37,7 @@ const ProfileSchema = new Schema({
   },
   experience: [ // 工作经历
     {
-      current: {
+      current: { // 当前的
         type: Boolean,
         default: true
       },
