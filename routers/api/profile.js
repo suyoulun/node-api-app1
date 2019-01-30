@@ -12,9 +12,9 @@ const validateExperienceInput = require('../../validation/experience');
 const validateEducationInput = require('../../validation/education');
 
 /**
+ * 测试接口
  * $route   api/users/test
  * @method  GET
- * @desc    测试接口
  * @access  public
  */
 router.get('/test', (req, res) => {
@@ -22,9 +22,9 @@ router.get('/test', (req, res) => {
 });
 
 /**
+ * 获取用户个人档案
  * $route   api/profile
  * @method  GET
- * @desc    获取用户个人档案
  * @access  private
  */
 router.get('/', passport.authenticate('jwt', {session:false}), (req, res) => {
@@ -42,9 +42,9 @@ router.get('/', passport.authenticate('jwt', {session:false}), (req, res) => {
 });
 
 /**
+ * 创建和编辑用户个人档案
  * $route   api/profile/
  * @method  POST
- * @desc    创建和编辑用户个人档案
  * @access  private
  */
 router.post('/', passport.authenticate('jwt', {session:false}), (req, res) => {
@@ -96,9 +96,9 @@ router.post('/', passport.authenticate('jwt', {session:false}), (req, res) => {
 });
 
 /**
+ * 通过 handle 获取用户个人档案
  * $route   api/profile/handle/:handle
  * @method  GET
- * @desc    通过 handle 获取用户个人档案
  * @access  public
  */
 router.get('/handle/:handle', (req, res) => {
@@ -116,9 +116,9 @@ router.get('/handle/:handle', (req, res) => {
 });
 
 /**
+ * 通过 user_id 获取用户个人档案
  * $route   api/profile/user/:user_id
  * @method  GET
- * @desc    通过 user_id 获取用户个人档案
  * @access  public
  */
 router.get('/user/:user_id', (req, res) => {
@@ -135,11 +135,10 @@ router.get('/user/:user_id', (req, res) => {
     .catch(err => res.status(404).json(err));
 });
 
-
 /**
+ * 获取所有用户个人档案
  * $route   api/profile/all
  * @method  GET
- * @desc    获取所有用户个人档案
  * @access  public
  */
 router.get('/all', (req, res) => {
@@ -156,11 +155,10 @@ router.get('/all', (req, res) => {
     .catch(err => res.status(404).json(err));
 });
 
-
 /**
+ * 添加个人工作经历
  * $route   api/profile/experience
  * @method  POST
- * @desc    添加个人工作经历
  * @access  private
  */
 router.post('/experience', passport.authenticate('jwt', {session:false}), (req, res) => {
@@ -190,11 +188,10 @@ router.post('/experience', passport.authenticate('jwt', {session:false}), (req, 
     })
 });
 
-
 /**
+ * 添加个人教育经历
  * $route   api/profile/education
  * @method  POST
- * @desc    添加个人教育经历
  * @access  private
  */
 router.post('/education', passport.authenticate('jwt', {session:false}), (req, res) => {
@@ -222,6 +219,62 @@ router.post('/education', passport.authenticate('jwt', {session:false}), (req, r
         .then(profile => res.json(profile))
         .catch(err => res.status(400).json(err))
     })
+});
+
+/**
+ * 删除个人工作经历
+ * $route   api/profile/experience/:exp_id
+ * @method  DELETE
+ * @access  private
+ */
+router.delete('/experience/:exp_id', passport.authenticate('jwt', {session:false}), (req, res) => {
+
+  Profile.findOne({user: req.user.id})
+    .then(profile => {
+      const removeIndex = profile.experience.map(item => item.id).indexOf(req.params.exp_id)
+
+      profile.experience.splice(removeIndex, 1);
+
+      profile.save().then(profile => res.json(profile))
+    })
+    .catch(err => res.status(404).json(err))
+});
+
+/**
+ * 删除个人教育经历
+ * $route   api/profile/education/:edu_id
+ * @method  DELETE
+ * @access  private
+ */
+router.delete('/education/:edu_id', passport.authenticate('jwt', {session:false}), (req, res) => {
+
+  Profile.findOne({user: req.user.id})
+    .then(profile => {
+      const removeIndex = profile.education.map(item => item.id).indexOf(req.params.exp_id)
+
+      profile.education.splice(removeIndex, 1);
+
+      profile.save().then(profile => res.json(profile))
+    })
+    .catch(err => res.status(404).json(err))
+});
+
+/**
+ * 删除整个用户信息
+ * $route   api/profile
+ * @method  DELETE
+ * @access  private
+ */
+router.delete('/', passport.authenticate('jwt', {session:false}), (req, res) => {
+
+  Profile.findOneAndRemove({user: req.user.id})
+    .then(() => {
+      User.findOneAndRemove({_id: req.user.id})
+        .then(() => {
+          res.json({success: true, msg: '删除成功'})
+        })
+    })
+    .catch(err => res.status(404).json(err))
 });
 
 
