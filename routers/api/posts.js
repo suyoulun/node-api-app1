@@ -93,5 +93,50 @@ router.delete('/:id', passport.authenticate('jwt', {session:false}), (req, res) 
 });
 
 
+/**
+ * 评论点赞
+ * $route   api/posts/like/:id
+ * @method  post
+ * @access  private
+ */
+router.post('/like/:id', passport.authenticate('jwt', {session:false}), (req, res) => {
+  Profile.findOne({user: req.user.id}).then(profile => {
+    Post.findById(req.params.id)
+      .then(post => {
+        // 判断是否已点赞
+        if (post.likes.filter(like => like.user.toString() === req.user.id).length > 0) {
+          return res.status(400).json({msg: '该用户已点赞'})
+        }
+
+        post.likes.unshift({user: req.user.id});
+        post.save().then(post => res.json(post))
+      })
+      .catch(err => res.status(404).json({msg: '找不到该评论'}))
+  })
+});
+
+/**
+ * 取消评论点赞
+ * $route   api/posts/unlike/:id
+ * @method  post
+ * @access  private
+ */
+router.post('/unlike/:id', passport.authenticate('jwt', {session:false}), (req, res) => {
+  Profile.findOne({user: req.user.id}).then(profile => {
+    Post.findById(req.params.id)
+      .then(post => {
+        // 判断是否已点赞
+        if (post.likes.filter(like => like.user.toString() === req.user.id).length === 0) {
+          return res.status(400).json({msg: '该用户未点赞'})
+        }
+
+        const removeIndex = post.likes.map(item => item.user.toString()).indexOf(req.user.id);
+        post.likes.splice(removeIndex, 1);
+        post.save().then(post => res.json(post))
+      })
+      .catch(err => res.status(404).json({msg: '找不到该评论'}))
+  })
+});
+
 
 module.exports = router;
