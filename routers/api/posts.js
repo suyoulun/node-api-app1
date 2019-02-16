@@ -27,6 +27,9 @@ router.get('/test', (req, res) => {
  * $route   api/posts
  * @method  POST
  * @access  Private
+ * @param   text  [String]  评论内容
+ * @param   name  [String]  用户名
+ * @param   avatar  [String]  头像
  */
 router.post('/', passport.authenticate('jwt', {session:false}), (req, res) => {
   // 验证请求参数
@@ -136,6 +139,60 @@ router.post('/unlike/:id', passport.authenticate('jwt', {session:false}), (req, 
       })
       .catch(err => res.status(404).json({msg: '找不到该评论'}))
   })
+});
+
+
+/**
+ * 添加评论
+ * $route   api/posts/comment/:id
+ * @method  post
+ * @access  private
+ * @param   text  [String]  评论内容
+ * @param   name  [String]  用户名
+ * @param   avatar  [String]  头像
+ */
+router.post('/comment/:id', passport.authenticate('jwt', {session:false}), (req, res) => {
+  // 验证请求参数
+  const {errors, isValid} = validatePostInput(req.body);
+  if (!isValid) {
+    return res.status(400).json(errors)
+  }
+
+  Post.findById(req.params.id).then(post => {
+    const newComment = {
+      user: req.user.id,
+      text: req.body.text,
+      name: req.body.name,
+      avatar: req.body.avatar,
+    };
+    post.comments.unshift(newComment);
+    post.save().then(post => res.json(post));
+  })
+    .catch(err => res.status(404).json({msg: '添加评论错误'}));
+
+});
+
+
+/**
+ * 删除评论
+ * $route   api/posts/comment/:id/:comment_id
+ * @method  delete
+ * @access  private
+ */
+router.delete('/comment/:id/:comment_id', passport.authenticate('jwt', {session:false}), (req, res) => {
+  Post.findById(req.params.id)
+    .then(post => {
+      const removeIndex = post.comments.map(item => item._id.toString()).indexOf(req.params.comment_id);
+
+      // 判断是否有该评论
+      if (removeIndex < 0) {
+        return res.status(400).json({msg: '该评论不存在'})
+      }
+
+      post.comments.splice(removeIndex, 1);
+      post.save().then(post => res.json(post))
+    })
+    .catch(err => res.status(404).json({msg: '删除评论错误'}))
 });
 
 
